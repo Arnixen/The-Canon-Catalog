@@ -164,6 +164,7 @@ def process_workbook(path: Path, session: requests.Session, token: str, write_po
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--token", default=os.getenv("TMDB_API_TOKEN"), help="TMDB API Read Access Token; defaults to TMDB_API_TOKEN")
+    parser.add_argument("--workbook", action="append", help="Workbook filename to process; may be repeated. Defaults to all configured workbooks.")
     parser.add_argument("--write-posters", action="store_true", help="Write remote TMDB image URLs into poster cells")
     parser.add_argument("--overwrite", action="store_true", help="Replace existing poster values")
     args = parser.parse_args()
@@ -174,7 +175,8 @@ def main() -> None:
     session = requests.Session()
     response_cache: dict[str, dict] = {}
     totals = [0, 0, 0]
-    for filename in WORKBOOK_FILES:
+    filenames = args.workbook or WORKBOOK_FILES
+    for filename in filenames:
         path = ROOT / filename
         if not path.exists():
             continue

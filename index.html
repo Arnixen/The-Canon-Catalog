@@ -959,6 +959,8 @@
 <div class="provider-attribution" aria-label="Data and image attribution">
   <img src="images/TMDB-logo.png" alt="TMDB" />
   <span>This product uses the TMDB API but is not endorsed or certified by TMDB. <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">Visit TMDB</a></span>
+  <img src="images/comicvine-logo.png" alt="Comic Vine" />
+  <span>Comic Vine cover images are sourced from <a href="https://comicvine.gamespot.com" target="_blank" rel="noopener noreferrer">Comic Vine</a>.</span>
 </div>
 
 <script>
@@ -1054,6 +1056,11 @@
       if (text) return text;
     }
     return '';
+  }
+
+  function getComicVineUrlForRow(row) {
+    const value = getRowValueByVariants(row, ['comic vine id', 'comicvine id']);
+    return /^https?:\/\/(?:www\.)?comicvine\.gamespot\.com\//i.test(value) ? value : '';
   }
 
   function parseYearFromReleaseDate(value) {
@@ -2537,6 +2544,7 @@
       card.dataset.letterboxd = row['letterboxd url'] || '';
       card.dataset.imdb = row['imdb url'] || '';
       card.dataset.tmdb = getTmdbPageUrlForRow(posterSourceRow || row);
+      card.dataset.comicvine = getComicVineUrlForRow(posterSourceRow || row);
       card.dataset.era = row['Era'] || '';
 
       const normalizedType = (row.type || '').toLowerCase();
@@ -2666,11 +2674,12 @@
       if (gregorianYearText) {
         infoHtml += `<div class="overlay-meta">${gregorianYearText}</div>`;
       }
-      if (card.dataset.letterboxd || card.dataset.imdb || card.dataset.tmdb) {
+      if (card.dataset.letterboxd || card.dataset.imdb || card.dataset.tmdb || card.dataset.comicvine) {
         infoHtml += '<div class="overlay-links">';
         if (card.dataset.letterboxd) infoHtml += `<a href="${card.dataset.letterboxd}" target="_blank" title="Letterboxd"><img src="images/Letterboxd-logo.png" alt="Letterboxd"></a>`;
         if (card.dataset.imdb) infoHtml += `<a href="${card.dataset.imdb}" target="_blank" title="IMDb"><img src="images/IMDB-logo.png" alt="IMDb"></a>`;
         if (card.dataset.tmdb) infoHtml += `<a href="${card.dataset.tmdb}" target="_blank" title="TMDB" aria-label="TMDB"><img src="images/TMDB-logo.png" alt="TMDB" onerror="this.style.display='none';this.parentNode.textContent='TMDB';"></a>`;
+        if (card.dataset.comicvine) infoHtml += `<a href="${card.dataset.comicvine}" target="_blank" rel="noopener noreferrer" title="Comic Vine" aria-label="Comic Vine"><img src="images/comicvine-logo.png" alt="Comic Vine"></a>`;
         infoHtml += '</div>';
       }
       infoOverlay.innerHTML = infoHtml;
