@@ -1,3 +1,6 @@
 .venv/
 ~$*.xlsx
 *.tmp
+*.xlsx.bak
+comicvine_cover_suggestions.csv
+comicvine_cover_suggestions.json

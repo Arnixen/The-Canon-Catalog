@@ -280,7 +280,7 @@
     height: clamp(20px, 2vw, 32px);
     object-fit: contain;
     flex: 0 0 auto;
-    filter: none;
+    filter: invert(1);
     opacity: 0.9;
   }
   .type-filter-btn {
@@ -502,7 +502,8 @@
     height: 20px;
     object-fit: contain;
     margin: 2px 0 4px 0;
-    filter: drop-shadow(0 1px 3px #000c);
+    filter: invert(1) drop-shadow(0 1px 3px #000c);
+    opacity: 0.9;
   }
   .card-info-overlay .overlay-meta {
     font-size: 0.93em;
@@ -548,6 +549,32 @@
   }
   .card-info-overlay .overlay-links .tmdb-link:hover {
     filter: brightness(1.08);
+  }
+  .provider-attribution {
+    width: min(760px, calc(100% - 24px));
+    margin: 28px auto 18px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: #d8d8d8;
+    background: rgba(0, 0, 0, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+  .provider-attribution img {
+    width: 72px;
+    height: auto;
+    max-height: 28px;
+    object-fit: contain;
+  }
+  .provider-attribution a {
+    color: #fff;
   }
   body {
     font-family: system-ui, sans-serif;
@@ -858,13 +885,13 @@
     </div>
     <div style="display: none;">
       <select id="franchiseSelect" aria-hidden="true" tabindex="-1">
-        <option value="MCU">MCU</option>
+        <option value="MCU">Marvel Studios</option>
         <option value="StarWars">Star Wars</option>
         <option value="StarTrek">Star Trek</option>
         <option value="DoctorWho">Doctor Who</option>
         <option value="MiddleEarth">Middle-Earth</option>
         <option value="RiordanVerse">RiordanVerse</option>
-        <option value="DCU">DC Universe</option>
+        <option value="DCU">DC Studios</option>
         <option value="Zelda">The Legend of Zelda</option>
       </select>
     </div>
@@ -929,6 +956,11 @@
 
 <div id="noResults" style="display: none; text-align: center; margin-top: 20px; font-size: 1.2em;">No Content Found</div>
 
+<div class="provider-attribution" aria-label="Data and image attribution">
+  <img src="images/TMDB-logo.png" alt="TMDB" />
+  <span>This product uses the TMDB API but is not endorsed or certified by TMDB. <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">Visit TMDB</a></span>
+</div>
+
 <script>
   window.franchiseFiles = {
     MCU: 'MCU.xlsx',
@@ -961,7 +993,7 @@
     posterSize: 'w500',
     logoSize: 'w500',
     backdropSize: 'w1280',
-    bearerToken: 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMjZmNGRkOTExMDE4NWUwZjhlZTlmY2FmMGEwMzU2MiIsIm5iZiI6MTc4NTI4NDYxNC45NDgsInN1YiI6IjZhNjk0ODA2MjhkMzc1ZjZiZWQyN2Y5YiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.-YFdGjxYy4G-YO3HJ5Azb0qIwC8T3aIXmWqZpSFXdFg',
+    bearerToken: '',
     requestLanguage: 'en-US',
     ...(window.tmdbConfig || {})
   };
@@ -2201,6 +2233,13 @@
     const activeFranchise = document.getElementById('franchiseSelect').value;
     const checkedCardKeys = getCheckedCardKeys(activeFranchise);
     const posterFolder = 'images';
+    function buildPosterSource(posterValue) {
+      const source = String(posterValue || '').trim();
+      if (!source) return 'images/placeholder-episode.jpg';
+      if (/^(?:https?:|data:|blob:)/i.test(source)) return source;
+      return `${posterFolder}/${source}`;
+    }
+
     function applyMediaStyles(mediaElement) {
       mediaElement.style.position = 'absolute';
       mediaElement.style.top = '0';
@@ -2292,7 +2331,7 @@
         fallbackImg.loading = index < 12 ? 'eager' : 'lazy';
         fallbackImg.decoding = 'async';
         fallbackImg.fetchPriority = index < 12 ? 'high' : 'low';
-        fallbackImg.src = poster ? `${posterFolder}/${poster}` : 'images/placeholder-episode.jpg';
+        fallbackImg.src = buildPosterSource(poster);
         fallbackImg.dataset.fallbackSrc = fallbackImg.src;
         fallbackImg.alt = row.title;
         fallbackImg.onerror = function() {
@@ -2308,7 +2347,7 @@
         const video = document.createElement('video');
         applyMediaStyles(video);
         const source = document.createElement('source');
-        source.src = `${posterFolder}/${poster}`;
+        source.src = buildPosterSource(poster);
         source.type = 'video/mp4';
         video.loop = true;
         video.muted = true;
@@ -2624,9 +2663,9 @@
       }
       if (card.dataset.letterboxd || card.dataset.imdb || card.dataset.tmdb) {
         infoHtml += '<div class="overlay-links">';
-        if (card.dataset.letterboxd) infoHtml += `<a href="${card.dataset.letterboxd}" target="_blank" title="Letterboxd"><img src="images/letterboxd-icon.png" alt="Letterboxd"></a>`;
-        if (card.dataset.imdb) infoHtml += `<a href="${card.dataset.imdb}" target="_blank" title="IMDb"><img src="images/imdb-icon.png" alt="IMDb"></a>`;
-        if (card.dataset.tmdb) infoHtml += `<a href="${card.dataset.tmdb}" target="_blank" title="TMDB" aria-label="TMDB"><img src="images/tmdb-icon.png" alt="TMDB" onerror="this.style.display='none';this.parentNode.textContent='TMDB';"></a>`;
+        if (card.dataset.letterboxd) infoHtml += `<a href="${card.dataset.letterboxd}" target="_blank" title="Letterboxd"><img src="images/Letterboxd-logo.png" alt="Letterboxd"></a>`;
+        if (card.dataset.imdb) infoHtml += `<a href="${card.dataset.imdb}" target="_blank" title="IMDb"><img src="images/IMDB-logo.png" alt="IMDb"></a>`;
+        if (card.dataset.tmdb) infoHtml += `<a href="${card.dataset.tmdb}" target="_blank" title="TMDB" aria-label="TMDB"><img src="images/TMDB-logo.png" alt="TMDB" onerror="this.style.display='none';this.parentNode.textContent='TMDB';"></a>`;
         infoHtml += '</div>';
       }
       infoOverlay.innerHTML = infoHtml;
@@ -2748,7 +2787,7 @@
       scale: 1.3
     },
     DCU: {
-      label: 'DC Universe',
+      label: 'DC Studios',
       logo: 'dcu-logo.png',
       scale: 1.3
     },
