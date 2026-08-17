@@ -51,6 +51,10 @@ def parse_reference(value: str, default_type: str) -> tuple[str, str, str | None
         return "", "", None
 
     path = urlparse(raw).path if raw.startswith("http") else raw
+    directory_season_match = re.search(r"(?:^|/)(\d+)(?:-[^/]+)?/season/(\d+)(?:/|$)", path, re.I)
+    if directory_season_match:
+        return "tv", directory_season_match.group(1), directory_season_match.group(2)
+
     season_match = re.search(r"/(tv)/(\d+)/season/(\d+)", path, re.I)
     if season_match:
         return season_match.group(1).lower(), season_match.group(2), season_match.group(3)
@@ -73,7 +77,9 @@ def infer_type(type_value: str, explicit_type: str) -> str:
     return "tv" if any(token in key for token in ("tv", "series", "episode", "special", "short")) else "movie"
 
 
-def fetch_json(session: requests.Session, token: str, path: str) -> dict:
+def fetch_json(session: requests.Session, token: str, path: str, cache: dict[str, dict]) -> dict:
+    if path in cache:
+        return cache[path]
     response = session.get(
         f"{API_BASE}{path}",
         params={"language": "en-US"},
@@ -81,10 +87,12 @@ def fetch_json(session: requests.Session, token: str, path: str) -> dict:
         timeout=30,
     )
     response.raise_for_status()
-    return response.json()
+    payload = response.json()
+    cache[path] = payload
+    return payload
 
 
-def process_workbook(path: Path, session: requests.Session, token: str, write_posters: bool, overwrite: bool) -> tuple[int, int, int]:
+def process_workbook(path: Path, session: requests.Session, token: str, write_posters: bool, overwrite: bool, response_cache: dict[str, dict]) -> tuple[int, int, int]:
     workbook = load_workbook(path, data_only=False)
     changed = False
     processed = written = skipped = 0
@@ -102,7 +110,8 @@ def process_workbook(path: Path, session: requests.Session, token: str, write_po
         for row_number, cells in enumerate(rows[1:], start=2):
             row_map = {keys[i]: cells[i].value for i in range(min(len(keys), len(cells)))}
             existing_poster = get_value(row_map, "poster")
-            if existing_poster and not overwrite:
+            local_poster_exists = bool(existing_poster) and not re.match(r"^(?:https?:|data:|blob:)", existing_poster, re.I) and (ROOT / "images" / existing_poster).exists()
+            if existing_poster and not overwrite and (local_poster_exists or re.match(r"^(?:https?:|data:|blob:)", existing_poster, re.I)):
                 skipped += 1
                 continue
 
@@ -128,10 +137,10 @@ def process_workbook(path: Path, session: requests.Session, token: str, write_po
 
             processed += 1
             try:
-                details = fetch_json(session, token, f"/{media_type}/{tmdb_id}")
+                details = fetch_json(session, token, f"/{media_type}/{tmdb_id}", response_cache)
                 poster_path = ""
                 if media_type == "tv" and season_number is not None:
-                    season = fetch_json(session, token, f"/tv/{tmdb_id}/season/{season_number}")
+                    season = fetch_json(session, token, f"/tv/{tmdb_id}/season/{season_number}", response_cache)
                     poster_path = text(season.get("poster_path"))
                 if not poster_path:
                     poster_path = text(details.get("poster_path"))
@@ -163,12 +172,13 @@ def main() -> None:
         raise SystemExit("Provide --token or set TMDB_API_TOKEN. The token is never stored in index.html.")
 
     session = requests.Session()
+    response_cache: dict[str, dict] = {}
     totals = [0, 0, 0]
     for filename in WORKBOOK_FILES:
         path = ROOT / filename
         if not path.exists():
             continue
-        values = process_workbook(path, session, args.token, args.write_posters, args.overwrite)
+        values = process_workbook(path, session, args.token, args.write_posters, args.overwrite, response_cache)
         totals = [left + right for left, right in zip(totals, values)]
 
     print(f"Rows with TMDB references processed: {totals[0]}")

@@ -2318,8 +2318,13 @@
       const altPoster = isSeriesMode && typeof posterSourceRow?.['alt-poster'] === 'string' && posterSourceRow['alt-poster'].trim().length > 0
         ? posterSourceRow['alt-poster'].trim()
         : '';
+      const hasRemoteAltPoster = /^https?:\/\//i.test(altPoster);
       const poster = isSeriesMode
-        ? (altPoster || (typeof posterSourceRow?.poster === 'string' && posterSourceRow.poster.trim().length > 0 ? posterSourceRow.poster.trim() : null))
+        ? (hasRemoteAltPoster
+          ? altPoster
+          : (typeof posterSourceRow?.poster === 'string' && posterSourceRow.poster.trim().length > 0
+            ? posterSourceRow.poster.trim()
+            : (altPoster || null)))
         : (typeof row?.poster === 'string' && row.poster.trim().length > 0 ? row.poster.trim() : null);
       const isVideoPoster = !!poster && /\.mp4$/i.test(poster);
       const isPlaceholder = !poster;

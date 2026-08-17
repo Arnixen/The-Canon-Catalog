@@ -39,6 +39,7 @@ Use `--overwrite` only when intentionally replacing existing posters:
 ```powershell
 python3.13 scripts/populate_tmdb_posters.py --write-posters --overwrite
 ```
+Use `--overwrite` for season rows whose current poster is a whole-series image. The script recognizes TMDB directory values such as `91363-what-if/season/1`, fetches the season artwork, and writes the season-specific remote URL.
 
 After reviewing the workbook changes:
 
