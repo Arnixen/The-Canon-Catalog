@@ -3000,74 +3000,67 @@
   function getTypeIconForType(typeValue) {
     const key = normalizeTypeKey(typeValue);
     if (!key) return '';
-    const currentFranchise = document.getElementById('franchiseSelect')?.value || '';
-    const comicIcon = currentFranchise === 'MCU' ? 'images/marvel-comic.png' : 'images/comic.png';
-    const juniorBookIcon = 'images/book-junior.png';
-    const yaNovelIcon = 'images/novel-ya.png';
-    const shortStoryIcon = 'images/short-story.png';
-    const marvelComicIcon = 'images/marvel-comic.png';
-    const darkHorseComicIcon = 'images/dark-horse-comic.png';
-    const idwComicIcon = 'images/idw-comic.png';
-
-    if (key.includes('comic (marvel)') || key.includes('marvel comic')) return marvelComicIcon;
-    if (key.includes('comic (dark horse)') || key.includes('dark horse')) return darkHorseComicIcon;
-    if (key.includes('comic (idw)') || key.includes('idw comic') || key.includes('(idw)')) return idwComicIcon;
-
+    const icon = (fileName) => `images/${encodeURIComponent(fileName).replace(/%2F/g, '/')}`;
     const directMap = {
-      'movie': 'images/film.png',
-      'film': 'images/film.png',
-      'live action film': 'images/film.png',
-      'live action series': 'images/tv-live.png',
-      'tv episode': 'images/tv-live.png',
-      'tv special': 'images/tv-live.png',
-      'animated series': 'images/tv-animated.png',
-      'animated tv': 'images/tv-animated.png',
-      'animated tv (junior)': 'images/tv-animated.png',
-      'junior animated series': 'images/tv-animated.png',
-      'animated short': 'images/shorts.png',
-      'animated shorts': 'images/shorts.png',
-      'short': 'images/shorts.png',
-      'shorts': 'images/shorts.png',
-      'comic': comicIcon,
-      'comic (marvel)': marvelComicIcon,
-      'comic (dark horse)': darkHorseComicIcon,
-      'comic (idw)': idwComicIcon,
-      'manga': 'images/graphic-novel.png',
-      'graphic novel': 'images/graphic-novel.png',
-      'graphic novels': 'images/graphic-novel.png',
-      'book (junior)': juniorBookIcon,
-      'junior book': juniorBookIcon,
-      'novel (young adult)': yaNovelIcon,
-      'young adult novel': yaNovelIcon,
-      'ya novel': yaNovelIcon,
-      'short story': shortStoryIcon,
-      'short stories': shortStoryIcon,
-      'novel': 'images/novel.png',
-      'audio drama': 'images/audio.png',
-      'audio': 'images/audio.png',
-      'video game': 'images/game.png',
-      'game': 'images/game.png',
-      'disney world attraction': 'images/disney-world.png',
-      'book (junior)': 'images/book-junior.png'
+      'film': 'Film.png',
+      'movie': 'Film.png',
+      'live action film': 'Film.png',
+      'tv movie': 'Film.png',
+      'tv': 'TV (Live Action).png',
+      'series': 'TV (Live Action).png',
+      'live action series': 'TV (Live Action).png',
+      'tv (live action)': 'TV (Live Action).png',
+      'tv episode': 'TV (Live Action).png',
+      'tv episode (classicwho)': 'TV (Live Action).png',
+      'tv episode (nuwho)': 'TV (Live Action).png',
+      'tv episode (spinoff)': 'TV (Live Action).png',
+      'special': 'Special.png',
+      'tv special (nuwho)': 'Special.png',
+      'tv (animated)': 'TV (Animated).png',
+      'animated tv': 'TV (Animated).png',
+      'animated tv episode': 'TV (Animated).png',
+      'tv (junior animated)': 'TV (Animated).png',
+      'short': 'Short.png',
+      'short (junior)': 'Short.png',
+      'audio drama': 'Audio Drama.png',
+      'audio drama (junior)': 'Audio Drama (Junior).png',
+      'comic (marvel)': 'Comic (Marvel).png',
+      'comic story (marvel)': 'Comic (Marvel).png',
+      'comic (dark horse)': 'Comic (Dark Horse).png',
+      'comic story (dark horse)': 'Comic (Dark Horse).png',
+      'comic (idw)': 'Comic (IDW).png',
+      'comic story (idw)': 'Comic (IDW).png',
+      'comic story (magazine)': 'Comic (Marvel).png',
+      'graphic novel': 'Graphic Novel.png',
+      'manga': 'Manga.png',
+      'book (junior)': 'Book (Junior).png',
+      'novel': 'Novel.png',
+      'novel (middle-grade)': 'Novel (Middle Grade).png',
+      'novel (young adult)': 'Novel (Young Adult).png',
+      'short story': 'Short Story.png',
+      'short story (insider)': 'Short Story (Insider).png',
+      'short story (junior)': 'Short Story (Junior).png',
+      'video game': 'Video Game.png',
+      'video game (remaster)': 'Video Game.png',
+      'video game (spinoff)': 'Video Game.png'
     };
 
-    if (directMap[key]) return directMap[key];
-
-    if (key.includes('graphic novel') || key.includes('manga')) return 'images/graphic-novel.png';
-    if (key.includes('short story')) return shortStoryIcon;
-    if (key.includes('junior') && key.includes('book')) return juniorBookIcon;
-    if ((key.includes('young adult') || /\bya\b/.test(key)) && (key.includes('novel'))) return yaNovelIcon;
-    if (key.includes('comic') && key.includes('marvel')) return marvelComicIcon;
-    if (key.includes('comic') && (key.includes('dark horse')|| key.endsWith(' dh'))) return darkHorseComicIcon;
-    if (key.includes('comic') && (key.includes('idw') || key.includes('(idw)'))) return idwComicIcon;
-    if (key.includes('comic')) return comicIcon;
-    if (key.includes('novel')) return 'images/novel.png';
-    if (key.includes('short') && !key.includes('short story')) return 'images/shorts.png';
-    if (key.includes('audio')) return 'images/audio.png';
-    if (key.includes('game')) return 'images/game.png';
-    if (key.includes('animated')) return 'images/tv-animated.png';
-    if (key.includes('series') || key.includes('tv') || key.includes('episode') || key.includes('special')) return 'images/tv-live.png';
-    if (key.includes('film') || key.includes('movie')) return 'images/film.png';
+    if (directMap[key]) return icon(directMap[key]);
+    if (key.includes('comic')) return icon('Comic (Marvel).png');
+    if (key.includes('graphic novel')) return icon('Graphic Novel.png');
+    if (key.includes('manga')) return icon('Manga.png');
+    if (key.includes('short story')) return icon('Short Story.png');
+    if (key.includes('audio')) return icon('Audio Drama.png');
+    if (key.includes('junior') && key.includes('book')) return icon('Book (Junior).png');
+    if (key.includes('young adult') && key.includes('novel')) return icon('Novel (Young Adult).png');
+    if (key.includes('middle-grade') && key.includes('novel')) return icon('Novel (Middle Grade).png');
+    if (key.includes('novel')) return icon('Novel.png');
+    if (key.includes('game')) return icon('Video Game.png');
+    if (key.includes('animated')) return icon('TV (Animated).png');
+    if (key.includes('short')) return icon('Short.png');
+    if (key.includes('special')) return icon('Special.png');
+    if (key.includes('series') || key.includes('tv') || key.includes('episode')) return icon('TV (Live Action).png');
+    if (key.includes('film') || key.includes('movie')) return icon('Film.png');
 
     return '';
   }
