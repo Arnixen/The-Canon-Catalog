@@ -5,16 +5,16 @@ I have spent a summer converting what was previously a 4-year-in-progress collec
 
 The Canon Catalog site transforms my workbooks full of franchise data into a beautiful timeline complete with posters and cover art for your viewing pleasure.
 Available Franchise timelines are currently:
-Marvel
-Star Wars
-Doctor Who (No, I'm not insane, this is purely for intended watch order. I am not doing an in-universe chronology)
-Star Trek
-DC
-Middle Earth
-The World of Percy Jackson
-The Legend of Zelda
+- Marvel
+- Star Wars
+- Doctor Who (No, I'm not insane, this is purely for intended watch order. I am not doing an in-universe chronology)
+- Star Trek
+- DC
+- Middle Earth
+- The World of Percy Jackson
+- The Legend of Zelda
 
-All timelines are complete to my level of willingness, and I have ommitted items simply because they don't fit my preferences (Subject to change) (PJO Movies, Howard the Duck, etc.)
+All timelines are complete to my level of willingness, and I have ommitted items simply because they don't fit my preferences. (Subject to change) (PJO Movies, Howard the Duck, etc.)
 
 All pages can be filtered by media type (Movie, TV, Novel, etc...) as well as sorted by Release order, or Chronological Timeline order.
 For media with episodes, like TV shows, or issues, like comic series, the (Episodic / By Series) toggle will switch between featuring each issue/episode individually, or compressing those tiles into one.
@@ -28,10 +28,10 @@ so a lot of the timeline placement stuff is based on speculation, fan theories, 
 
 I really hope you enjoy! Any feedback can be sent to arnixen7567@gmail.com
 
-Movie & TV Posters are sourced from The Movie Database
-Comic & Graphic Novel Covers are sourced from Comic Vine
-Novel Covers have yet to be sourced
-Video Game Key Art has yet to be sourced
+Movie & TV Posters are sourced from The Movie Database.
+Comic & Graphic Novel Covers are sourced from Comic Vine.
+Novel Covers have yet to be sourced.
+Video Game Key Art has yet to be sourced.
 
 All posters, logos, and artworks belong to their respective copyright holders.
 This site is not endorsed by or affiliated with Disney, Warner Brothers, The BBC, Paramount Pictures, or Nintendo.
