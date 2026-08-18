@@ -47,7 +47,7 @@
 
   function getComicVineUrlForRow(row) {
     const value = getRowValueByVariants(row, ['comic vine url', 'comicvine url']);
-    return /^https?:\/\/(?:www\.)?comicvine\.gamespot\.com\//i.test(value) ? value : '';
+    return /^https?:\/\/\S+$/i.test(value) ? value : '';
   }
 
   function parseTmdbPathReference(value) {
