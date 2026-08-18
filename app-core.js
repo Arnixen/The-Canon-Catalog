@@ -46,7 +46,7 @@
   }
 
   function getComicVineUrlForRow(row) {
-    const value = getRowValueByVariants(row, ['comic vine id', 'comicvine id']);
+    const value = getRowValueByVariants(row, ['comic vine url', 'comicvine url']);
     return /^https?:\/\/(?:www\.)?comicvine\.gamespot\.com\//i.test(value) ? value : '';
   }
 
