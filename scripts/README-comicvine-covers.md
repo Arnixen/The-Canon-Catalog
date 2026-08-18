@@ -72,3 +72,23 @@ git push origin main
 ```
 
 Temporary Excel lock files such as `~$MCU.xlsx` should not be added.
+
+## No-API page lookup
+
+For the Star Wars `CANON` sheet, `scripts/populate_comicvine_posters.py` can read
+the existing Comic Vine issue URLs and extract the public page's `og:image`
+value without making Comic Vine API requests:
+
+```powershell
+python scripts/populate_comicvine_posters.py
+python scripts/populate_comicvine_posters.py --write-posters
+```
+
+The first command is a dry run. Existing poster values are preserved unless
+`--overwrite` is supplied. A `.bak` copy is created before the first workbook
+write.
+
+Comic Vine may return Cloudflare HTTP 403 responses to non-browser requests.
+When that happens, this resolver reports the affected rows and does not write
+them; it requires a browser-capable environment or a permitted alternate data
+source for those pages.
