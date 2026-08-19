@@ -263,8 +263,10 @@
       return normalized;
     };
 
-    const startValue = formatDateValue(findRowValue(['setting - starts', 'setting starts', 'settingstarts', 'start date', 'startdate', 'start_date', 'start', 'starts']));
-    const endValue = formatDateValue(findRowValue(['setting - ends', 'setting ends', 'settingends', 'end date', 'enddate', 'end_date', 'end', 'ends']));
+    const startVariants = ['setting - starts', 'setting starts', 'settingstarts', 'start date', 'startdate', 'start_date', 'start', 'starts'];
+    const endVariants = ['setting - ends', 'setting ends', 'settingends', 'end date', 'enddate', 'end_date', 'end', 'ends'];
+    const startValue = formatDateValue(findRowValue(startVariants));
+    const endValue = formatDateValue(findRowValue(endVariants));
 
     return { startValue, endValue };
   }
@@ -291,18 +293,41 @@
     return trimmed;
   }
 
+  function formatTimelineRange(startValue, endValue) {
+    if (!startValue) return endValue;
+    if (!endValue) return startValue;
+    if (startValue === endValue) return startValue;
+
+    const parseDate = (value) => {
+      const match = String(value).match(/^([A-Za-z]+)(?:\s+(\d{1,2}))?,\s*(\d{4})$/);
+      if (!match) return null;
+      return { month: match[1], day: match[2] || '', year: match[3] };
+    };
+
+    const start = parseDate(startValue);
+    const end = parseDate(endValue);
+    if (!start || !end || start.year !== end.year) {
+      return `${startValue} - ${endValue}`;
+    }
+
+    if (!start.day || !end.day) {
+      if (start.month === end.month) return `${start.month}, ${start.year}`;
+      return `${start.month} - ${end.month}, ${start.year}`;
+    }
+
+    if (start.month === end.month) {
+      return `${start.month} ${start.day} - ${end.day}, ${start.year}`;
+    }
+    return `${start.month} ${start.day} - ${end.month} ${end.day}, ${start.year}`;
+  }
+
   function getInUniverseTimeLabel(row, franchiseKey) {
     const { startValue, endValue } = getTimelineStartEndValues(row, franchiseKey);
 
     const formattedStartValue = formatTimelineDisplayValue(startValue);
     const formattedEndValue = formatTimelineDisplayValue(endValue);
 
-    if (formattedStartValue && formattedEndValue) {
-      if (formattedStartValue === formattedEndValue) {
-        return formattedEndValue;
-      }
-      return `${formattedStartValue} - ${formattedEndValue}`;
-    }
+    if (formattedStartValue && formattedEndValue) return formatTimelineRange(formattedStartValue, formattedEndValue);
     if (formattedStartValue) {
       return formattedStartValue;
     }
@@ -374,7 +399,7 @@
     if (seriesViewMode === 'series' && seriesId && Array.isArray(dataRows)) {
       const seriesRange = getSeriesTimelineRangeValues(dataRows, franchiseKey, seriesId);
       if (seriesRange) {
-        const combinedLabel = [seriesRange.startValue, seriesRange.endValue].filter(Boolean).join(' - ');
+        const combinedLabel = formatTimelineRange(seriesRange.startValue, seriesRange.endValue);
         if (combinedLabel) {
           label = combinedLabel;
         }
