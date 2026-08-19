@@ -134,7 +134,7 @@ def main() -> None:
     parser.add_argument("--workbook", type=Path, default=DEFAULT_WORKBOOK)
     parser.add_argument("--write-posters", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--delay", type=float, default=18.1, help="Minimum seconds between unique API requests")
+    parser.add_argument("--delay", type=float, default=1.1, help="Minimum seconds between unique API requests")
     parser.add_argument("--max-requests-per-hour", type=int, default=199, help="Hourly request cap below Comic Vine's 200-request limit")
     args = parser.parse_args()
 

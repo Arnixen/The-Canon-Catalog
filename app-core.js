@@ -50,6 +50,11 @@
     return /^https?:\/\/\S+$/i.test(value) ? value : '';
   }
 
+  function getLibraryUrlForRow(row) {
+    const value = getRowValueByVariants(row, ['library url', 'open library url', 'openlibrary url']);
+    return /^https?:\/\/\S+$/i.test(value) ? value : '';
+  }
+
   function parseTmdbPathReference(value) {
     const raw = String(value || '').trim();
     if (!raw) return null;

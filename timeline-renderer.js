@@ -27,6 +27,7 @@
     const activeFranchise = document.getElementById('franchiseSelect').value;
     const checkedCardKeys = getCheckedCardKeys(activeFranchise);
     const posterFolder = 'images';
+    const deferredPosterImages = [];
     function buildPosterSource(posterValue) {
       const source = String(posterValue || '').trim();
       if (!source) return 'images/placeholder-episode.jpg';
@@ -124,11 +125,19 @@
       const createFallbackImage = function() {
         const fallbackImg = document.createElement('img');
         applyMediaStyles(fallbackImg);
-        fallbackImg.loading = index < 12 ? 'eager' : 'lazy';
         fallbackImg.decoding = 'async';
-        fallbackImg.fetchPriority = index < 12 ? 'high' : 'low';
-        fallbackImg.src = buildPosterSource(poster);
-        fallbackImg.dataset.fallbackSrc = fallbackImg.src;
+        const posterSource = buildPosterSource(poster);
+        fallbackImg.dataset.fallbackSrc = posterSource;
+        if (isPlaceholder) {
+          fallbackImg.loading = 'eager';
+          fallbackImg.fetchPriority = 'low';
+          fallbackImg.src = posterSource;
+        } else {
+          fallbackImg.loading = 'eager';
+          fallbackImg.fetchPriority = 'low';
+          fallbackImg.dataset.deferredPoster = 'true';
+          deferredPosterImages.push(fallbackImg);
+        }
         fallbackImg.alt = row.title;
         fallbackImg.onerror = function() {
           if (fallbackImg.src.indexOf('placeholder-episode.jpg') === -1) {
@@ -167,6 +176,7 @@
       card.dataset.imdb = row['imdb url'] || '';
       card.dataset.tmdb = getTmdbPageUrlForRow(posterSourceRow || row);
       card.dataset.comicvine = getComicVineUrlForRow(posterSourceRow || row);
+      card.dataset.library = getLibraryUrlForRow(posterSourceRow || row);
       card.dataset.era = row['Era'] || '';
 
       const normalizedType = (row.type || '').toLowerCase();
@@ -291,12 +301,13 @@
       if (gregorianYearText) {
         infoHtml += `<div class="overlay-meta">${gregorianYearText}</div>`;
       }
-      if (card.dataset.letterboxd || card.dataset.imdb || card.dataset.tmdb || card.dataset.comicvine) {
+      if (card.dataset.letterboxd || card.dataset.imdb || card.dataset.tmdb || card.dataset.comicvine || card.dataset.library) {
         infoHtml += '<div class="overlay-links">';
         if (card.dataset.letterboxd) infoHtml += `<a href="${card.dataset.letterboxd}" target="_blank" title="Letterboxd"><img src="images/Letterboxd-logo.png" alt="Letterboxd"></a>`;
         if (card.dataset.imdb) infoHtml += `<a href="${card.dataset.imdb}" target="_blank" title="IMDb"><img src="images/IMDB-logo.png" alt="IMDb"></a>`;
         if (card.dataset.tmdb) infoHtml += `<a href="${card.dataset.tmdb}" target="_blank" title="TMDB" aria-label="TMDB"><img src="images/TMDB-logo.png" alt="TMDB" onerror="this.style.display='none';this.parentNode.textContent='TMDB';"></a>`;
         if (card.dataset.comicvine) infoHtml += `<a href="${card.dataset.comicvine}" target="_blank" rel="noopener noreferrer" title="Comic Vine" aria-label="Comic Vine"><img src="images/comicvine-logo.png" alt="Comic Vine"></a>`;
+        if (card.dataset.library) infoHtml += `<a href="${card.dataset.library}" target="_blank" rel="noopener noreferrer" title="Open Library" aria-label="Open Library"><img src="images/OpenLibraryLogo.png" alt="Open Library"></a>`;
         infoHtml += '</div>';
       }
       infoOverlay.innerHTML = infoHtml;
@@ -317,6 +328,37 @@
     });
 
     timeline.appendChild(cardFragment);
+    if (deferredPosterImages.length) {
+      const loadDeferredPoster = (image) => {
+        image.fetchPriority = 'high';
+        image.src = image.dataset.fallbackSrc;
+        image.removeAttribute('data-deferred-poster');
+      };
+      if ('IntersectionObserver' in window) {
+        const visibilityTimers = new WeakMap();
+        const posterObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            const image = entry.target;
+            if (entry.isIntersecting) {
+              if (!visibilityTimers.has(image)) {
+                visibilityTimers.set(image, window.setTimeout(() => {
+                  loadDeferredPoster(image);
+                  posterObserver.unobserve(image);
+                  visibilityTimers.delete(image);
+                }, 1000));
+              }
+            } else {
+              const timer = visibilityTimers.get(image);
+              if (timer) window.clearTimeout(timer);
+              visibilityTimers.delete(image);
+            }
+          });
+        }, { root: timeline, threshold: 0.1 });
+        deferredPosterImages.forEach((image) => posterObserver.observe(image));
+      } else {
+        deferredPosterImages.forEach(loadDeferredPoster);
+      }
+    }
     // Apply filters and restore scroll based on either a pending anchor or persisted value.
     const anchorToRestore = pendingScrollAnchor;
     pendingScrollAnchor = null;

@@ -30,7 +30,7 @@ I really hope you enjoy! Any feedback can be sent to arnixen7567@gmail.com
 
 Movie & TV Posters are sourced from The Movie Database.
 Comic & Graphic Novel Covers are sourced from Comic Vine.
-Novel Covers have yet to be sourced.
+Novel Covers are sourced from Open Library when available.
 Video Game Key Art has yet to be sourced.
 
 All posters, logos, and artworks belong to their respective copyright holders.
