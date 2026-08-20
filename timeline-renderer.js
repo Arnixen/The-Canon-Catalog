@@ -128,7 +128,9 @@
         fallbackImg.decoding = 'async';
         const posterSource = buildPosterSource(poster);
         fallbackImg.dataset.fallbackSrc = posterSource;
-        fallbackImg.loading = index < 12 ? 'eager' : 'lazy';
+        // Always eager: native lazy-loading would delay the fetch until the card is
+        // already on screen, overriding our own viewport/near-viewport prioritization.
+        fallbackImg.loading = 'eager';
         fallbackImg.fetchPriority = index < 12 ? 'high' : 'low';
         fallbackImg.src = posterSource;
         if (!isPlaceholder) backgroundPosterImages.push(fallbackImg);
