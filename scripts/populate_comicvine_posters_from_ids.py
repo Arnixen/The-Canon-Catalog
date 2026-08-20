@@ -101,7 +101,7 @@ def process_workbook(
                             time.sleep(delay - elapsed)
                     request_times.append(time.monotonic())
                     item = fetch_issue(session, api_key, issue_id)
-                    cache[issue_id] = text((item.get("image") or {}).get("original_url"))
+                    cache[issue_id] = text((item.get("image") or {}).get("scale_small_url"))
                 except (requests.RequestException, RuntimeError) as exc:
                     failed += 1
                     print(f"FAILED {worksheet.title}!{row_number} issue {issue_id}: {exc}")

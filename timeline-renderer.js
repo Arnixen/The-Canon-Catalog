@@ -27,7 +27,7 @@
     const activeFranchise = document.getElementById('franchiseSelect').value;
     const checkedCardKeys = getCheckedCardKeys(activeFranchise);
     const posterFolder = 'images';
-    const deferredPosterImages = [];
+    const backgroundPosterImages = [];
     function buildPosterSource(posterValue) {
       const source = String(posterValue || '').trim();
       if (!source) return 'images/placeholder-episode.jpg';
@@ -128,16 +128,10 @@
         fallbackImg.decoding = 'async';
         const posterSource = buildPosterSource(poster);
         fallbackImg.dataset.fallbackSrc = posterSource;
-        if (isPlaceholder) {
-          fallbackImg.loading = 'eager';
-          fallbackImg.fetchPriority = 'low';
-          fallbackImg.src = posterSource;
-        } else {
-          fallbackImg.loading = 'eager';
-          fallbackImg.fetchPriority = 'low';
-          fallbackImg.dataset.deferredPoster = 'true';
-          deferredPosterImages.push(fallbackImg);
-        }
+        fallbackImg.loading = index < 12 ? 'eager' : 'lazy';
+        fallbackImg.fetchPriority = index < 12 ? 'high' : 'low';
+        fallbackImg.src = posterSource;
+        if (!isPlaceholder) backgroundPosterImages.push(fallbackImg);
         fallbackImg.alt = row.title;
         fallbackImg.onerror = function() {
           if (fallbackImg.src.indexOf('placeholder-episode.jpg') === -1) {
@@ -328,36 +322,47 @@
     });
 
     timeline.appendChild(cardFragment);
-    if (deferredPosterImages.length) {
-      const loadDeferredPoster = (image) => {
-        image.fetchPriority = 'high';
-        image.src = image.dataset.fallbackSrc;
-        image.removeAttribute('data-deferred-poster');
+    if (backgroundPosterImages.length && 'IntersectionObserver' in window) {
+      const visiblePosterImages = new Set();
+      const posterObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            visiblePosterImages.add(entry.target);
+          } else {
+            visiblePosterImages.delete(entry.target);
+          }
+        });
+      }, { root: timeline, threshold: 0.5 });
+      backgroundPosterImages.forEach((image) => posterObserver.observe(image));
+
+      const nearVisiblePosterImages = new Set();
+      const nearPosterObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            nearVisiblePosterImages.add(entry.target);
+          } else {
+            nearVisiblePosterImages.delete(entry.target);
+          }
+        });
+      }, { root: timeline, rootMargin: '150% 0px', threshold: 0 });
+      backgroundPosterImages.forEach((image) => nearPosterObserver.observe(image));
+
+      let stillnessTimer = null;
+      const prioritizeStillPosters = () => {
+        visiblePosterImages.forEach((image) => {
+          if (image.fetchPriority !== 'high') image.fetchPriority = 'high';
+        });
+        // Near-viewport posters come next, since scrolling would reveal them first.
+        nearVisiblePosterImages.forEach((image) => {
+          if (!visiblePosterImages.has(image) && image.fetchPriority !== 'high') image.fetchPriority = 'auto';
+        });
       };
-      if ('IntersectionObserver' in window) {
-        const visibilityTimers = new WeakMap();
-        const posterObserver = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            const image = entry.target;
-            if (entry.isIntersecting) {
-              if (!visibilityTimers.has(image)) {
-                visibilityTimers.set(image, window.setTimeout(() => {
-                  loadDeferredPoster(image);
-                  posterObserver.unobserve(image);
-                  visibilityTimers.delete(image);
-                }, 1000));
-              }
-            } else {
-              const timer = visibilityTimers.get(image);
-              if (timer) window.clearTimeout(timer);
-              visibilityTimers.delete(image);
-            }
-          });
-        }, { root: timeline, threshold: 0.1 });
-        deferredPosterImages.forEach((image) => posterObserver.observe(image));
-      } else {
-        deferredPosterImages.forEach(loadDeferredPoster);
-      }
+      const scheduleStillnessCheck = () => {
+        if (stillnessTimer) window.clearTimeout(stillnessTimer);
+        stillnessTimer = window.setTimeout(prioritizeStillPosters, 200);
+      };
+      timeline.addEventListener('scroll', scheduleStillnessCheck, { passive: true });
+      scheduleStillnessCheck();
     }
     // Apply filters and restore scroll based on either a pending anchor or persisted value.
     const anchorToRestore = pendingScrollAnchor;
