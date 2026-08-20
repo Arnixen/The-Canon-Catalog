@@ -326,10 +326,13 @@
       const visiblePosterImages = new Set();
       const posterObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
+          const image = entry.target;
           if (entry.isIntersecting) {
-            visiblePosterImages.add(entry.target);
+            visiblePosterImages.add(image);
+            // Visible cards load immediately, no need to wait for scrolling to stop.
+            if (image.fetchPriority !== 'high') image.fetchPriority = 'high';
           } else {
-            visiblePosterImages.delete(entry.target);
+            visiblePosterImages.delete(image);
           }
         });
       }, { root: timeline, threshold: 0.5 });
@@ -349,9 +352,6 @@
 
       let stillnessTimer = null;
       const prioritizeStillPosters = () => {
-        visiblePosterImages.forEach((image) => {
-          if (image.fetchPriority !== 'high') image.fetchPriority = 'high';
-        });
         // Near-viewport posters come next, since scrolling would reveal them first.
         nearVisiblePosterImages.forEach((image) => {
           if (!visiblePosterImages.has(image) && image.fetchPriority !== 'high') image.fetchPriority = 'auto';
